@@ -81,7 +81,8 @@
 
   .menu__entry a {
     font-weight: 400; }
-
+  .menu__entry a:hover {
+    color: #EE6C4D; }
   .social-links {
     float: right;
     font-size: 170%;
@@ -93,6 +94,8 @@
     font-size: 120%;
     margin-right: 35px;
     list-style-type: none; }
+    .social-links__entry :hover {
+      color: #EE6C4D; }
     .social-links__entry:last-child {
       margin-right: 0px; }
 
@@ -139,6 +142,17 @@
     font-weight: 700;
     color: #333333;
     text-align: center; }
+
+/* =Resume *//****************************************************************/
+  .resume-section p{
+    font-size: 120%;
+  }
+  .resume-section strong{
+    color: #2D3142;
+  }
+  /* .res-right{
+    float: right;
+  } */
 
 /* =Post page *//*************************************************************/
   .about {
@@ -187,6 +201,25 @@
       display: block;
       text-align: center;
       width: 100%; }
+  
+  .pdfbutton {
+    text-align: center;  
+  }
+  .button {
+    border-radius: 4px;
+    /* border-color: #00000091; */
+    border-width: 1px;
+    padding: 10px;
+    font-size: 130%;
+    transition-duration: 0.2s;
+    color: #4ECDC4;
+    background-color: #fbffff;
+    
+  }
+  .button:hover {
+    background-color: #4ECDC4;
+    color: white;
+  }
 
 /* =Small screen *//*************************************************************/
   @media (max-width: 500px) {
