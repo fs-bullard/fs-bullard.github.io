@@ -158,7 +158,8 @@
   .about {
     color: #828282;
     text-align: center;
-    line-height: 24px; }
+    line-height: 24px;
+    margin-top: 20px;}
 
   .about__devider {
     font-size: 100%;
