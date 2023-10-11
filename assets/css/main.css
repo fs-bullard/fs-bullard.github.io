@@ -55,6 +55,11 @@
     max-width: 800px;
     margin: 60px auto; }
 
+  ::selection {
+    background-color: #ee6d4d;
+    color:#fbffff;
+  }
+
 /* =Header *//*************************************************************/
   .header {
     overflow: hidden; }
