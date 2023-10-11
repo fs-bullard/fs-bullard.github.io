@@ -143,6 +143,26 @@
     color: #333333;
     text-align: center; }
 
+    .row {
+      display: flex;
+    }
+    
+    .column {
+      flex: 25%;
+      padding: 5px;
+    }
+    .column p {
+      text-align: center;
+      margin-top: 5px;
+      font-size: 100%;
+    }
+  
+  .project-img {
+    border-radius: 4%;
+    margin: auto;
+    margin-bottom: 3%;
+  }
+
 /* =Resume *//****************************************************************/
   .resume-section p{
     font-size: 120%;
@@ -251,8 +271,8 @@
       margin-top: 10px;
       margin-bottom: 30px; }
 
-    .page-title__text {
-      font-size: 150%; }
+    /* .page-title__text {
+      font-size: 150%; } */
 
     .page-title__subtitle {
       font-size: 65%; }
