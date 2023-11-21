@@ -59,6 +59,14 @@
             <div class="page-title__text">Projects</div>
             </h1>
 
+            <div id="describe-text">
+                <p>
+                    Some coding projects I have worked on. Click on the titles for brief summaries; for more in depth project descriptions and source code
+                    follow the links to their corresponding GitHub repos.
+                </p>
+            </div>
+
+
             <!-- *********************** Quantum Optimisation *********************** -->
             <hr>
             <button class="accordion">
@@ -72,22 +80,26 @@
                 
                 <div id="describe-text">
                     <p>
-                        Applying quantum algorithms to solve classical optimisation problems. <br>
-                        Implemented a simulation of the Quantum Adiabatic Algorithm to solve the Maximum Independent Set problem. <br>
-                        Project is described in more detail on <a href="https://github.com/fs-bullard/quantum-optimisation" target="_blank"><strong>GitHub <i class="fa fa-github"></i></strong></a>
+                        Adiabatic Quantum Computing is a form of quantum computing based on the Adiabatic Theorem. 
+                        We demonstrate that it can be used to solve a simple instance, see <b>Fig. 1</b>, of the well known optimisation problem 
+                        Maximal Independent Set. 
+                        We find that the algorithm is more successful when incremental time steps are smaller, see <b>Fig. 2</b>.
                     </p>
                 </div>
 
                 <div style="text-align: center; font-size: 70%;">
-                    <img src="https://github.com/fs-bullard/quantum-optimisation/raw/main/Resources/mis-example.png" class="project-img" style="width:60%">
-                    <p><i>Fig. 1: Example of the Maximum Independent Set problem. a) A set of vertices which aren't independent. 
-                        b) a set of vertices which are independent but not the maximum independent set. 
-                        c) the maximum independent set for this graph</i></p>
+                    <img src="assets/img/MIS_example.png" class="project-img" style="width:60%">
+                    <p><i><b>Fig. 1</b>: The instance of Maximal Independent Set we investigated. From left to right: a set which isn’t independent, a set which is independent but not the maximum, the maximal independent set.</i></p>
                 </div>   
                 <div style="text-align: center; font-size: 70%;">
-                    <img src="https://github.com/fs-bullard/quantum-optimisation/raw/main/Resources/mis-example-output.png" class="project-img" style="width:60%">
-                    <p><i>Fig. 2: Success probability against time for solving the example graph for different values of tmax: 
-                        1 (blue), 2 (orange), 5 (green), 10 (red), 100 (purple) </i></p>
+                    <img src="assets/img/milestone_grah.png" class="project-img" style="width:60%">
+                    <p><i><b>Fig. 2</b>: Success probability against time for tmax of 1 (blue), 2 (orange), 5 (green), 10 (red), 100 (purple).</i></p>
+                </div>
+                <div id="describe-text">
+                    <p>
+                        Project is described in more detail on <a href="https://github.com/fs-bullard/quantum-optimisation" target="_blank"><strong>GitHub <i class="fa fa-github"></i></strong></a>
+
+                    </p>
                 </div>
             </div>
 
@@ -146,6 +158,31 @@
                     </p>
                 </div>
             </div>
+
+            <!-- *********************** INFINITE MELODY *********************** -->
+            <hr>
+            <button class="accordion">
+                <h1 class="page-title">
+                    <div class="page-title__text">
+                        The Infinite Melody - AI generated music <a href="https://github.com/fs-bullard/the-infinite-melody" target="_blank"><strong><i class="fa fa-github"></i></strong></a>
+                    </div>
+                </h1>
+            </button>
+            <div class="panel">
+                <img src="assets/img/inf_mel_screenshot.png" class="project-img" style="width:60%">
+                
+
+                <div id="describe-text">
+                    <p>
+                        Music generated in real time by a recurrent neural network trained on scraped MIDI tracks.<br>
+                        The project was completed in 24 hours, reaching the semi-final of DurHack 2023. <br>
+                        See more on <a href="https://github.com/fs-bullard/the-infinite-melody" target="_blank">
+                            <strong>GitHub <i class="fa fa-github"></i></strong></a>, 
+                            and try it out for yourself on its website <a href="https://infinite-melody.nw.r.appspot.com" target="_blank"><strong>infinite-melody.nw.r.appspot.com</strong></a>.
+                    </p>
+                </div>
+            </div>
+
             <!-- *********************** End *************************** -->
 
             <hr>
