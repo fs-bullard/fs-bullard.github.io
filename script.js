@@ -16,3 +16,13 @@ for (i = 0; i < acc.length; i++) {
     }
   });
 }
+
+var fragmentIdentifier = window.location.hash.substring(1); // Get the fragment identifier without the '#'
+
+var accordion = document.getElementById(fragmentIdentifier);
+
+// Check if the element exists and trigger a click event
+if (accordion) {
+  accordion.click();
+}
+;
