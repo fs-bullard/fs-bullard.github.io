@@ -10,6 +10,10 @@
     color: #4F5D75;
     font-weight: bold;
     text-decoration: none; }
+  
+  button:focus {
+    outline: none; 
+    color: #EE6C4D;  }
 
   p, ul, ol, dl {
     font-size: 150%;
@@ -62,6 +66,11 @@
   ::selection {
     background-color: #ee6c4d;
     color:#fbffff;
+  }
+
+  .no-underline:hover {
+    text-decoration: none;
+    color: #EE6C4D;
   }
 
 /* =Header *//*************************************************************/
@@ -183,6 +192,11 @@
     background-color:transparent;
     border: 0;
     width: 100%;
+  }
+
+  .carousel {
+    width: 60%;
+    margin-left: 20%;
   }
 
   .accordion .page-title {
