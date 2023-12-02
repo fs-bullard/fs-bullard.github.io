@@ -27,3 +27,15 @@ if (accordion) {
 }
 ;
 
+function readMore() {
+  var moreText = document.getElementById("more");
+  var btnText = document.getElementById("readMore");
+
+  if (moreText.style.display === "inline") {
+    btnText.innerHTML = "<strong> Read more...</strong>";
+    moreText.style.display = "none";
+  } else {
+    btnText.innerHTML = "<strong> Read less.</strong>";
+    moreText.style.display = "inline";
+  }
+}

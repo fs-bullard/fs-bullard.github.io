@@ -199,6 +199,10 @@
     margin-left: 20%;
   }
 
+  .carousel-caption {
+    font-size: 70%;
+  }
+
   .accordion .page-title {
     margin: 10px auto;
   }
@@ -214,6 +218,9 @@
   .panel {
     display: none;
   }
+
+  #more {display: none;}
+
 
   /* hr {
     margin-top: 1.5em; 
