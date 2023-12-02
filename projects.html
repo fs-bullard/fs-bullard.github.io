@@ -105,49 +105,6 @@
                 </div>
             </div>
 
-            <!-- ****************** Dark Matter *********************** -->
-            <hr>
-            <button class="accordion" id="dark-matter">
-                <h1 class="page-title">
-                    <div class="page-title__text">
-                        Investigating Dark Matter Content of Spiral Galaxy M82
-                    </div>
-                </h1>
-            </button>
-            <div class="panel">
-                
-                <div id="describe-text">
-                    <p>
-                        Click <a href="assets/other/m82_dark_matter.pdf" target="_blank"><strong>here</strong></a> to read the full report. <br>
-                        <b>Abstract:</b> <br>
-                        The search for dark matter has been a central focus in astrophysics since the term was first coined by Zwicky in 1933. 
-                        This report builds on the pioneering work of Rubin et al. (1980), employing a multi-faceted approach to investigate 
-                        the dark matter content of the spiral galaxy M82. Through analysis of its rotation curve from HI and CO emission lines, 
-                        as well as luminosity calculations via CCD photometry in the V-band, we determine the mass-to-light ratio of M82 to be 
-                        0.6 ± 0.8 Υ<sub>⊙</sub>, an order of magnitude lower than that of Andromeda, and demonstrate that the rotation 
-                        curve is Keplerian, consistent with that of a galaxy with mass concentrated in the central bulge. We conclude that M82 
-                        lacks an extended dark matter halo, challenging prevailing theories of dark matter distributions in spiral galaxies. 
-                    </p>
-                </div>
-
-                <div style="text-align: center; font-size: 70%;">
-                    <img src="assets/img/rgbstackedellipse.png" class="project-img" style="width:60%">
-                    <p><i><b>Fig. 1</b>: Stacked BVR image of M82 taken from Durham on
-                        06/02/2020, each image had an exposure time of 30s. An ellipse
-                        is overlaid to demonstrate the type of aperture used to extract
-                        luminosity data, R is the semi-major axis.</i></p>
-                </div>   
-                <div style="text-align: center; font-size: 70%;">
-                    <img src="assets/img/sofuerotcurve.png" class="project-img" style="width:60%">
-                    <p><i><b>Fig. 2</b>:  Rotation curve for M82 obtained from Doppler-shift of
-                        HI lines (blue) and CO-lines (orange) as measured by Sofue et al.
-                        in 1992 and Yun et al. in 1993 respectively. Rotation
-                        curve for a point mass (dashed) is indicated, normalised residuals
-                        are plotted below.</i></p>
-                </div>
-            </div>
-
-
             <!-- *********************** Brain MRI *********************** -->
             <hr>
             <button class="accordion" id="brain-mri">
@@ -162,9 +119,45 @@
                     <p>
                         Applying Deep Learning to automate classification of shape features in low-grade gliomas.  <br>
                         Aiming to reproduce the results of <a href="https://arxiv.org/abs/1906.03720">Buda et al.</a> <br>
-                        Project is described in more detail on <a href="https://github.com/fs-bullard/image-processing" target="_blank"><strong>GitHub <i class="fa fa-github"></i></strong></a>
+                        Project is described in more detail on <a href="https://github.com/fs-bullard/brain-mri-segmentation" target="_blank"><strong>GitHub <i class="fa fa-github"></i></strong></a>
                     </p>
                 </div>
+            </div>
+
+            <!-- ****************** Photoelasticity *********************** -->
+            <hr>
+            <button class="accordion" id="photoelasticity">
+                <h1 class="page-title">
+                    <div class="page-title__text">
+                        Photoelasticity - Analytical and Machine Learning Approaches to Stress Analysis <a href="https://github.com/fs-bullard/brain-mri-segmentation" target="_blank"><strong><i class="fa fa-github"></i></strong></a>
+                    </div>
+                </h1>
+            </button>
+            <div class="panel">
+                <div style="text-align: center; font-size: 70%;">
+                    <img src="assets/img/ring_isotropic.gif" class="project-img" style="width:40%">
+                    <p><i><b>Fig. 1</b>: A ring under diametral compression illuminated by white light. 
+                        The polarisation of incident and outgoing light is changed by π / 10 radians between each frame, rotating the isoclinic fringes but keeping the isochromatics stationary.</i></p>
+                </div> 
+
+                <div id="describe-text">
+                    <p>
+                        <!-- Click <a href="assets/other/m82_dark_matter.pdf" target="_blank"><strong>here</strong></a> to read the full report. <br> -->
+                        <b>Abstract:</b> <br>
+                        Understanding how objects behave under stress is crucial in many areas of engineering and materials science, spanning applications from product design in mechanical engineering, to orthopedics design in biomechanics. 
+                        There exist a number of numerical methods to carry out stress analysis for complex structures, such as finite element analysis (FEA), but these are computationally intensive, and therefore expensive to run. 
+                        Photoelasticity<span id="more">, the property of some transparent materials to exhibit birefringence when under stress, can be used to experimentally determine the stress distrubution in a complex structure. Although the process
+                        was originally developed in the early 1900s, it only gained traction 1980s with the advent of digital image processing, and vast increase in available computing power. 
+                        In this report, we compare two methods of digital photoelasticity, the analytical ten-step phase-shifting method based on Jones calculus (Ramji and Ramesh, 2008), and a machine learning approach using StressUNET, a
+                        convolutional neural network based on the U-Net architecture (Zhao et al., 2022). We find that the ten-step method produces accurate phase maps wrapped between 0 and 2π, but our attempts to unwrap these numerically to 
+                        obtain absolute phase maps were unsuccessful for structures more complex than a disc. Conversely, the machine learning approach produces accurate unwrapped phase maps for a variety of structures. We propose experimental
+                        setup improvements for both methods, and suggest implementing the branch-cutting algorithm (Goldstein, 1988) as an improvement to the ten-step method. </span>
+
+                        <a onclick="readMore()" id="readMore"><strong>Read more ...</strong></a>
+                    </p>
+                </div>
+
+                  
             </div>
 
             <!-- *********************** TOO NOISY *********************** -->
@@ -225,6 +218,48 @@
                             <strong>GitHub <i class="fa fa-github"></i></strong></a>, 
                             and try it out for yourself on its website <a href="https://infinite-melody.nw.r.appspot.com" target="_blank"><strong>infinite-melody.nw.r.appspot.com</strong></a>.
                     </p>
+                </div>
+            </div>
+
+            <!-- ****************** Dark Matter *********************** -->
+            <hr>
+            <button class="accordion" id="dark-matter">
+                <h1 class="page-title">
+                    <div class="page-title__text">
+                        Investigating The Dark Matter Content of Spiral Galaxy M82
+                    </div>
+                </h1>
+            </button>
+            <div class="panel">
+                
+                <div id="describe-text">
+                    <p>
+                        Click <a href="assets/other/m82_dark_matter.pdf" target="_blank"><strong>here</strong></a> to read the full report. <br>
+                        <b>Abstract:</b> <br>
+                        The search for dark matter has been a central focus in astrophysics since the term was first coined by Zwicky in 1933. 
+                        This report builds on the pioneering work of Rubin et al. (1980), employing a multi-faceted approach to investigate 
+                        the dark matter content of the spiral galaxy M82. Through analysis of its rotation curve from HI and CO emission lines, 
+                        as well as luminosity calculations via CCD photometry in the V-band, we determine the mass-to-light ratio of M82 to be 
+                        0.6 ± 0.8 Υ<sub>⊙</sub>, an order of magnitude lower than that of Andromeda, and demonstrate that the rotation 
+                        curve is Keplerian, consistent with that of a galaxy with mass concentrated in the central bulge. We conclude that M82 
+                        lacks an extended dark matter halo, challenging prevailing theories of dark matter distributions in spiral galaxies. 
+                    </p>
+                </div>
+
+                <div style="text-align: center; font-size: 70%;">
+                    <img src="assets/img/rgbstackedellipse.png" class="project-img" style="width:60%">
+                    <p><i><b>Fig. 1</b>: Stacked BVR image of M82 taken from Durham on
+                        06/02/2020, each image had an exposure time of 30s. An ellipse
+                        is overlaid to demonstrate the type of aperture used to extract
+                        luminosity data, R is the semi-major axis.</i></p>
+                </div>   
+                <div style="text-align: center; font-size: 70%;">
+                    <img src="assets/img/sofuerotcurve.png" class="project-img" style="width:60%">
+                    <p><i><b>Fig. 2</b>:  Rotation curve for M82 obtained from Doppler-shift of
+                        HI lines (blue) and CO-lines (orange) as measured by Sofue et al.
+                        in 1992 and Yun et al. in 1993 respectively. Rotation
+                        curve for a point mass (dashed) is indicated, normalised residuals
+                        are plotted below.</i></p>
                 </div>
             </div>
 
