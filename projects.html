@@ -130,7 +130,7 @@
             <button class="accordion" id="photoelasticity">
                 <h1 class="page-title">
                     <div class="page-title__text">
-                        Photoelasticity - Analytical and Machine Learning Approaches to Stress Analysis <a href="https://github.com/fs-bullard/brain-mri-segmentation" target="_blank"><strong><i class="fa fa-github"></i></strong></a>
+                        Photoelasticity - Analytical and Machine Learning Approaches to Stress Analysis <a href="https://github.com/fs-bullard/photoelasticity" target="_blank"><strong><i class="fa fa-github"></i></strong></a>
                     </div>
                 </h1>
             </button>
@@ -145,14 +145,7 @@
                     <p>
                         <!-- Click <a href="assets/other/m82_dark_matter.pdf" target="_blank"><strong>here</strong></a> to read the full report. <br> -->
                         <b>Abstract:</b> <br>
-                        Understanding how objects behave under stress is crucial in many areas of engineering and materials science, spanning applications from product design in mechanical engineering, to orthopedics design in biomechanics. 
-                        There exist a number of numerical methods to carry out stress analysis for complex structures, such as finite element analysis (FEA), but these are computationally intensive, and therefore expensive to run. 
-                        Photoelasticity<span id="more">, the property of some transparent materials to exhibit birefringence when under stress, can be used to experimentally determine the stress distrubution in a complex structure. Although the process
-                        was originally developed in the early 1900s, it only gained traction 1980s with the advent of digital image processing, and vast increase in available computing power. 
-                        In this report, we compare two methods of digital photoelasticity, the analytical ten-step phase-shifting method based on Jones calculus (Ramji and Ramesh, 2008), and a machine learning approach using StressUNET, a
-                        convolutional neural network based on the U-Net architecture (Zhao et al., 2022). We find that the ten-step method produces accurate phase maps wrapped between 0 and 2π, but our attempts to unwrap these numerically to 
-                        obtain absolute phase maps were unsuccessful for structures more complex than a disc. Conversely, the machine learning approach produces accurate unwrapped phase maps for a variety of structures. We propose experimental
-                        setup improvements for both methods, and suggest implementing the branch-cutting algorithm (Goldstein, 1988) as an improvement to the ten-step method. </span>
+                        Understanding how objects behave under stress is crucial in many areas of engineering and materials science, spanning applications from aerospace to bio-engineering. Several numerical methods of stress analysis for complex structures exist, but they are computationally intensive and, therefore, expensive to run. A cheaper, quicker and simpler alternative to such methods is therefore required. Such an alternative is the experimentally-based process of digital photoelasticity. In this report, two methods of digital photoelasticity are investigated: the analytical ten-step phase-shifting technique based on Jones calculus (Ramji and Ramesh, 2008), and StressUnet, a convolutional neural network based on the U-Net architecture (Zhao et al., 2022). The simplicity and low time requirement of stress analysis with StressUnet compared to stress analysis with the phase-shifting technique are highlighted. Both methods are shown to perform inconsistently when evaluated on experimentally obtained data, but StressUnet is shown to perform robustly when evaluated on a large, diverse set of computer-generated data. Experimental setup improvements for both methods are proposed, implementing the adaptive quality guided phase unwrapping algorithm (Ramji, 2010) and increasing the number of training epochs are suggested as improvements to the phase-shifting technique and StressUnet, respectively. </span>
 
                         <a onclick="readMore()" id="readMore"><strong>Read more ...</strong></a>
                     </p>
