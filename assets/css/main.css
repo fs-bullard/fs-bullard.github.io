@@ -296,6 +296,10 @@
     text-align: center; 
     margin-top: 15px; 
   }
+  .pdfbutton {
+    text-align: center; 
+    margin-top: 15px; 
+  }
   .notes .button {
     width: 200px;
   }
