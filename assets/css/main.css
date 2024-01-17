@@ -287,7 +287,12 @@
       text-align: center;
       width: 100%; }
   
-  .pdfbutton {
+  .posterbutton .button {
+    text-align: center; 
+    margin-bottom: 15px; 
+    font-size: 130%;
+  }
+  .posterbutton {
     text-align: center; 
     margin-top: 15px; 
   }
