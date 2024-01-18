@@ -89,10 +89,11 @@
                 <div id="describe-text">
                     <p>
                         Combinatorial optimisation is the act of finding the ideal combination of a set of objects subject to a set of constraints, 
-                        its applications span biology, engineering, computer science, and applied mathematics. 
+                        its applications span biology, engineering, computer science, and applied mathematics.
                         In this work, we solve a simple instance of the combinatorial optimisation problem Maximal Independence Set, see <b>Fig. 1</b>,  
-                        with simulated Adiabatic Quantum Computing, and suggest that a running time of 18s is optimal, 
-                        giving an acceptable success probability of 0.99, see <b>Fig. 2</b>.
+                        with matrix-simulated Quantum Annealing, and suggest that a running time of 18s is optimal, 
+                        giving an acceptable success probability of 0.99, see <b>Fig. 2</b>. <br>
+                        Whilst the matrix simulation works for small problems, the memory it requires scales exponentially with problem size. Path Integral Monte Carlo (PIMC) is an alternative simulation method based on the Feynman path integral formulation of quantum mechanics. Instead of summing over all possible paths through configuration space, the Metropolis algorithm is used to stochastically sample paths according to their probability amplitudes. The energy expectation value is measured throughout the simulation, and the state associated with the minimum measured energy is taken as the optimal solution.
                     </p>
                 </div>
 
@@ -110,7 +111,7 @@
                 </div>
                 <div id="describe-text">
                     <p>
-                        Project is described in more detail on <a href="https://github.com/fs-bullard/quantum-optimisation" target="_blank"><strong>GitHub <i class="fa fa-github"></i></strong></a>
+                        For code and details on the matrix simulation method, visit the <a href="https://github.com/fs-bullard/quantum-optimisation" target="_blank"><strong>GitHub <i class="fa fa-github"></i></strong></a>
 
                     </p>
                 </div>
