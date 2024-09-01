@@ -285,7 +285,9 @@
   #describe-text {
       display: block;
       text-align: center;
-      width: 100%; }
+      width: 90%; 
+      margin-left: 5%
+    }
   
   .posterbutton .button {
     text-align: center; 
