@@ -183,9 +183,9 @@
   function drawPipe(x, topH){
     const gap = getGap(), bottomY = topH + gap;
     ctx.fillStyle = 'rgba(20,100,50,1)'; ctx.fillRect(x, 0, 70, topH);
-    ctx.fillStyle = 'var(--pipe-dark)'; ctx.fillRect(x, topH-16, 70, 16);
+    ctx.fillStyle = 'var(--pipe-dark)'; ctx.fillRect(x-5, topH-16, 80, 25);
     ctx.fillStyle = 'var(--pipe)'; ctx.fillRect(x, bottomY, 70, H - bottomY - GROUND_H);
-    ctx.fillStyle = 'var(--pipe-dark)'; ctx.fillRect(x, bottomY, 70, 16);
+    ctx.fillStyle = 'var(--pipe-dark)'; ctx.fillRect(x-5, bottomY, 80, 25);
   }
 
   function drawGround(){
