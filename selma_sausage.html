@@ -51,6 +51,32 @@
   const W = canvas.width, H = canvas.height;
   const GRAVITY = 1400, FLAP_VELOCITY = -430, PIPE_GAP_BASE = 175, PIPE_SPEED = 180, PIPE_INTERVAL = 1300, GROUND_H = 90;
 
+  // --- Minimal, unobtrusive sound effects (Web Audio) ---
+  const audio = (() => {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    const ctx = new Ctx();
+    let unlocked = false;
+    function unlock(){ if (!unlocked){ ctx.resume && ctx.resume(); unlocked = true; } }
+    function blip({freq=600, dur=0.08, type='sine', gain=0.05, glide=0}){
+      if (!unlocked) return; // respect autoplay policies
+      const t = ctx.currentTime;
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = type; o.frequency.setValueAtTime(freq, t);
+      if (glide) o.frequency.exponentialRampToValueAtTime(Math.max(1,freq*glide), t+dur);
+      g.gain.setValueAtTime(gain, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t+dur);
+      o.connect(g).connect(ctx.destination);
+      o.start(t); o.stop(t+dur);
+    }
+    return {
+      unlock,
+      flap(){ blip({freq: 900, dur: 0.07, type: 'square', gain: 0.05}); },
+      score(){ blip({freq: 700, dur: 0.10, type: 'triangle', gain: 0.06}); },
+      hit(){ blip({freq: 240, dur: 0.22, type: 'sawtooth', gain: 0.06, glide: 0.6}); }
+    };
+  })();
+
   let last = 0, running = false, dead = false, showTitleInClouds = true;
   let score = 0, best = +localStorage.getItem('selma_best') || 0;
   bestEl.textContent = best;
@@ -140,26 +166,49 @@
     createTitleObject();
   }
 
-  function flap(){ if (!running){ start(); return; } if (dead){ reset(); return; } player.vy = FLAP_VELOCITY; }
+  function flap(){
+    audio.unlock(); // ensure audio is allowed on first input
+    if (!running){ start(); return; }
+    if (dead){ reset(); return; }
+    player.vy = FLAP_VELOCITY;
+    audio.flap();
+  }
   function start(){ reset(); running = true; titleEl.style.display = 'none'; cta.textContent = 'Pause'; }
   function pause(){ running = false; cta.textContent = 'Resume'; }
-  function resume(){ running = true; cta.textContent = 'Pause'; last = performance.now(); }
+  function resume(){ running = true; cta.textContent = 'Pause'; last = performance.now(); audio.unlock(); }
   function togglePause(){ if(!running){ resume(); } else { pause(); } }
 
   window.addEventListener('pointerdown', flap);
   window.addEventListener('keydown', e=>{ if(['Space','ArrowUp','KeyW'].includes(e.code)){ e.preventDefault(); flap(); } if(e.code==='KeyP') togglePause(); });
   cta.addEventListener('click', ()=>{ if(!running) resume(); else togglePause(); });
 
-  function onDie(){ if (dead) return; dead = true; running = false; best = Math.max(best, score); localStorage.setItem('selma_best', best); bestEl.textContent = best; titleEl.style.display = 'grid'; titleEl.innerHTML = `<div style="font-size:56px; font-weight:900;">GAME OVER</div><div style="margin-top:8px; font-size:18px;">Score: ${score} — Best: ${best}</div><div style="margin-top:6px; font-size:16px; opacity:.9;">Tap / Space to restart</div>`; cta.textContent = 'Restart'; }
+  function onDie(){
+    if (dead) return;
+    dead = true; running = false;
+    best = Math.max(best, score); localStorage.setItem('selma_best', best); bestEl.textContent = best;
+    titleEl.style.display = 'grid';
+    titleEl.innerHTML = `<div style="font-size:56px; font-weight:900;">GAME OVER</div><div style="margin-top:8px; font-size:18px;">Score: ${score} — Best: ${best}</div><div style="margin-top:6px; font-size:16px; opacity:.9;">Tap / Space to restart</div>`;
+    cta.textContent = 'Restart';
+    audio.hit();
+  }
 
   function loop(t){
     const dt = Math.min((t - last) / 1000 || 0, 1/20);
     last = t;
     if (running && !dead){
       spawnTimer += dt*1000;
-      if (spawnTimer > PIPE_INTERVAL){ spawnTimer = 0; const minTop=60, maxTop=H - GROUND_H - getGap() - 80; pipes.push({ x: W+40, topH: rand(minTop, maxTop), passed: false }); }
+      if (spawnTimer > PIPE_INTERVAL){
+        spawnTimer = 0;
+        const minTop=60, maxTop=H - GROUND_H - getGap() - 80;
+        pipes.push({ x: W+40, topH: rand(minTop, maxTop), passed: false });
+      }
       player.vy += GRAVITY*dt; player.y += player.vy*dt; player.rot = Math.atan2(player.vy, 400);
-      for (let p of pipes){ p.x -= PIPE_SPEED*dt; if (!p.passed && p.x+70 < player.x){ p.passed=true; score++; scoreEl.textContent=score; } }
+      for (let p of pipes){
+        p.x -= PIPE_SPEED*dt;
+        if (!p.passed && p.x+70 < player.x){
+          p.passed=true; score++; scoreEl.textContent=score; audio.score();
+        }
+      }
       pipes = pipes.filter(p=>p.x>-80);
       if (player.y + player.r > H - GROUND_H || player.y - player.r < 0) onDie();
       for (const p of pipes){ const gapTop=p.topH, gapBot=p.topH+getGap(); const withinX=(player.x+player.r>p.x)&&(player.x-player.r<p.x+70); if (withinX && (player.y-player.r<gapTop || player.y+player.r>gapBot)) onDie(); }
