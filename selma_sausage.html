@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Selma Sausage</title>
+  <style>
+    :root {
+      --bg: #87ceeb;
+      --pipe: #36b24a;
+      --pipe-dark: #2a8e3a;
+      --ground: #81d67f;
+      --ui: #ffffff;
+      --shadow: rgba(0,0,0,.2);
+      --accent: #222;
+    }
+    html, body { height: 100%; margin: 0; background: var(--bg); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
+    .wrap { display:flex; align-items:center; justify-content:center; height:100%; position: relative; }
+    canvas { box-shadow: 0 10px 35px var(--shadow); border-radius: 16px; background: var(--bg); max-width: 95vw; height: auto; }
+    .hud { position: fixed; inset: 0; display: grid; place-items: center; pointer-events: none; color: var(--ui); text-shadow: 0 2px 4px var(--shadow); }
+    .topbar { position: fixed; top: 14px; left: 50%; transform: translateX(-50%); display:flex; gap:16px; align-items:center; pointer-events:none; user-select:none; }
+    .chip { background: rgba(0,0,0,.25); backdrop-filter: blur(2px); border-radius: 999px; padding: 6px 12px; font-weight: 700; letter-spacing:.5px; }
+    .button { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); pointer-events: auto; background: var(--ui); color: var(--accent); font-weight: 800; border: 0; padding: 12px 18px; border-radius: 999px; box-shadow: 0 6px 18px var(--shadow); cursor: pointer; }
+    .button:active { transform: translateX(-50%) translateY(1px); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <canvas id="game" width="480" height="720" aria-label="Selma Sausage game" role="img"></canvas>
+  </div>
+  <div class="hud" id="hud">
+    <div id="title" style="text-align:center;">
+      <div style="font-size:56px; font-weight:900; letter-spacing:1px;">SELMA SAUSAGE</div>
+      <div style="font-size:16px; opacity:.9;">Tap / Click / Space to flap</div>
+    </div>
+  </div>
+  <div class="topbar">
+    <div class="chip">Score: <span id="score">0</span></div>
+    <div class="chip">Best: <span id="best">0</span></div>
+  </div>
+  <button class="button" id="cta">Start</button>
+
+<script>
+(() => {
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const scoreEl = document.getElementById('score');
+  const bestEl  = document.getElementById('best');
+  const titleEl = document.getElementById('title');
+  const cta = document.getElementById('cta');
+  const W = canvas.width, H = canvas.height;
+  const GRAVITY = 1400, FLAP_VELOCITY = -430, PIPE_GAP_BASE = 175, PIPE_SPEED = 180, PIPE_INTERVAL = 1300, GROUND_H = 90;
+
+  let last = 0, running = false, dead = false, showTitleInClouds = true;
+  let score = 0, best = +localStorage.getItem('selma_best') || 0;
+  bestEl.textContent = best;
+  const player = { x: W*0.28, y: H/2, r: 26, vy: 0, rot: 0 };
+  let pipes = [], spawnTimer = 0, titleObj = null;
+  const rand = (min,max) => Math.random()*(max-min)+min;
+  const getGap = () => Math.max(120, PIPE_GAP_BASE - score*2.2);
+
+  function createTitleObject(){
+    titleObj = { x: W + 100, y: 200 };
+  }
+
+  function drawMovingTitle(){
+    if (!titleObj) return;
+    ctx.save();
+    ctx.globalAlpha = 0.15;
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 32px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('SELMA SAUSAGE', titleObj.x, titleObj.y);
+    ctx.restore();
+  }
+
+  function roundedRect(x,y,w,h,r){
+    const rr = Math.min(r, w/2, h/2);
+    ctx.beginPath();
+    ctx.moveTo(x+rr, y);
+    ctx.arcTo(x+w, y, x+w, y+h, rr);
+    ctx.arcTo(x+w, y+h, x, y+h, rr);
+    ctx.arcTo(x, y+h, x, y, rr);
+    ctx.arcTo(x, y, x+w, y, rr);
+    ctx.closePath();
+  }
+
+  function drawSelma(x,y,rot){
+    ctx.save(); ctx.translate(x, y); ctx.rotate(rot);
+    const w = 58, h = 86, r = 28;
+    const grad = ctx.createLinearGradient(0,-h/2,0,h/2);
+    grad.addColorStop(0, '#ffb08a'); grad.addColorStop(1, '#ff926a');
+    ctx.fillStyle = grad; roundedRect(-w/2, -h/2, w, h, r); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.beginPath(); ctx.ellipse(-10, -10, 8, 22, -0.3, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#9b5e2b'; ctx.beginPath(); ctx.moveTo(-w/2+8, -h/2+12); ctx.quadraticCurveTo(-w/2-8, 0, -w/2+10, h/2-12); ctx.quadraticCurveTo(-w/2+2, -4, -w/2+8, -h/2+12); ctx.fill();
+    ctx.beginPath(); ctx.arc(0, -h/2-6, 10, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#2b1d16'; ctx.beginPath(); ctx.arc(5, -6, 3, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(18, -6, 3, 0, Math.PI*2); ctx.fill(); ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(12, 4, 7, 0, Math.PI/2); ctx.stroke();
+    ctx.fillStyle = '#222'; ctx.beginPath(); ctx.ellipse(-8, h/2-6, 14, 10, 0, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.ellipse(10, h/2-2, 16, 10, 0, 0, Math.PI*2); ctx.fill();
+    
+    // Draw Swedish flag in hand
+    ctx.save();
+    ctx.translate(20, -20); // position relative to sausage
+    ctx.rotate(-0.2);
+    // Flag pole
+    ctx.strokeStyle = '#8b5a2b';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(0, -25);
+    ctx.stroke();
+    // Flag rectangle
+    ctx.fillStyle = '#006aa7';
+    ctx.fillRect(0, -25, 18, 12);
+    ctx.fillStyle = '#fecc00';
+    ctx.fillRect(0, -21, 18, 4);
+    ctx.fillRect(6, -25, 4, 12);
+    ctx.restore();
+
+    ctx.restore();
+  }
+
+  function drawPipe(x, topH){
+    const gap = getGap(), bottomY = topH + gap;
+    ctx.fillStyle = 'var(--pipe)'; ctx.fillRect(x, 0, 70, topH);
+    ctx.fillStyle = 'var(--pipe-dark)'; ctx.fillRect(x, topH-16, 70, 16);
+    ctx.fillStyle = 'var(--pipe)'; ctx.fillRect(x, bottomY, 70, H - bottomY - GROUND_H);
+    ctx.fillStyle = 'var(--pipe-dark)'; ctx.fillRect(x, bottomY, 70, 16);
+  }
+
+  function drawGround(){
+    ctx.save(); ctx.translate(0, H - GROUND_H);
+    ctx.fillStyle = '#b7eaa8'; ctx.fillRect(0,0,W,GROUND_H);
+    ctx.fillStyle = 'var(--ground)'; for(let i=0;i<W;i+=24){ ctx.fillRect(i, 60, 16, 12); }
+    ctx.restore();
+  }
+
+  function reset(){
+    player.y = H/2; player.vy = 0; player.rot = 0;
+    pipes = []; spawnTimer = 0; score = 0; scoreEl.textContent = score; dead = false; showTitleInClouds = true;
+    createTitleObject();
+  }
+
+  function flap(){ if (!running){ start(); return; } if (dead){ reset(); return; } player.vy = FLAP_VELOCITY; }
+  function start(){ reset(); running = true; titleEl.style.display = 'none'; cta.textContent = 'Pause'; }
+  function pause(){ running = false; cta.textContent = 'Resume'; }
+  function resume(){ running = true; cta.textContent = 'Pause'; last = performance.now(); }
+  function togglePause(){ if(!running){ resume(); } else { pause(); } }
+
+  window.addEventListener('pointerdown', flap);
+  window.addEventListener('keydown', e=>{ if(['Space','ArrowUp','KeyW'].includes(e.code)){ e.preventDefault(); flap(); } if(e.code==='KeyP') togglePause(); });
+  cta.addEventListener('click', ()=>{ if(!running) resume(); else togglePause(); });
+
+  function onDie(){ if (dead) return; dead = true; running = false; best = Math.max(best, score); localStorage.setItem('selma_best', best); bestEl.textContent = best; titleEl.style.display = 'grid'; titleEl.innerHTML = `<div style="font-size:56px; font-weight:900;">GAME OVER</div><div style="margin-top:8px; font-size:18px;">Score: ${score} — Best: ${best}</div><div style="margin-top:6px; font-size:16px; opacity:.9;">Tap / Space to restart</div>`; cta.textContent = 'Restart'; }
+
+  function loop(t){
+    const dt = Math.min((t - last) / 1000 || 0, 1/20);
+    last = t;
+    if (running && !dead){
+      spawnTimer += dt*1000;
+      if (spawnTimer > PIPE_INTERVAL){ spawnTimer = 0; const minTop=60, maxTop=H - GROUND_H - getGap() - 80; pipes.push({ x: W+40, topH: rand(minTop, maxTop), passed: false }); }
+      player.vy += GRAVITY*dt; player.y += player.vy*dt; player.rot = Math.atan2(player.vy, 400);
+      for (let p of pipes){ p.x -= PIPE_SPEED*dt; if (!p.passed && p.x+70 < player.x){ p.passed=true; score++; scoreEl.textContent=score; } }
+      pipes = pipes.filter(p=>p.x>-80);
+      if (player.y + player.r > H - GROUND_H || player.y - player.r < 0) onDie();
+      for (const p of pipes){ const gapTop=p.topH, gapBot=p.topH+getGap(); const withinX=(player.x+player.r>p.x)&&(player.x-player.r<p.x+70); if (withinX && (player.y-player.r<gapTop || player.y+player.r>gapBot)) onDie(); }
+      if (titleObj) titleObj.x -= PIPE_SPEED * dt;
+      if (titleObj && titleObj.x < -200) titleObj = null;
+    }
+    ctx.clearRect(0,0,W,H);
+    if(showTitleInClouds && titleObj) drawMovingTitle();
+    for (const p of pipes) drawPipe(p.x, p.topH);
+    drawGround();
+    drawSelma(player.x, player.y, player.rot);
+    requestAnimationFrame(loop);
+  }
+
+  last = performance.now();
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
