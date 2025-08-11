@@ -77,6 +77,20 @@
     };
   })();
 
+  // Clouds and skyline layers
+  const clouds = Array.from({length:6}, () => ({x: Math.random()*W, y: Math.random()*200, w: 60+Math.random()*80, h: 20+Math.random()*20, speed: 20+Math.random()*20}));
+  const skyline = [];
+  function initSkyline(){
+    skyline.length = 0;
+    let x = 0;
+    while (x < W*2){
+      const bWidth = 40+Math.random()*40;
+      const bHeight = 100+Math.random()*100;
+      skyline.push({x, w: bWidth, h: bHeight});
+      x += bWidth + 10;
+    }
+  }
+
   let last = 0, running = false, dead = false, showTitleInClouds = true;
   let score = 0, best = +localStorage.getItem('selma_best') || 0;
   bestEl.textContent = best;
@@ -87,6 +101,27 @@
 
   function createTitleObject(){
     titleObj = { x: W + 100, y: 200 };
+  }
+
+  initSkyline();
+
+  function drawClouds(dt){
+    ctx.fillStyle = '#fff';
+    clouds.forEach(c => {
+      ctx.beginPath();
+      ctx.ellipse(c.x, c.y, c.w/2, c.h/2, 0, 0, Math.PI*2);
+      ctx.fill();
+      c.x -= c.speed * dt;
+      if (c.x + c.w/2 < 0) { c.x = W + c.w; c.y = Math.random()*200; }
+    });
+  }
+  function drawSkyline(dt){
+    ctx.fillStyle = 'rgba(150,150,150,1)';
+    skyline.forEach(b => {
+      ctx.fillRect(b.x, H - GROUND_H - b.h, b.w, b.h);
+      b.x -= 40 * dt;
+      if (b.x + b.w < 0){ b.x = W + 40; b.h = 100+Math.random()*100; }
+    });
   }
 
   function drawMovingTitle(){
@@ -147,7 +182,7 @@
 
   function drawPipe(x, topH){
     const gap = getGap(), bottomY = topH + gap;
-    ctx.fillStyle = 'var(--pipe)'; ctx.fillRect(x, 0, 70, topH);
+    ctx.fillStyle = 'rgba(20,100,50,1)'; ctx.fillRect(x, 0, 70, topH);
     ctx.fillStyle = 'var(--pipe-dark)'; ctx.fillRect(x, topH-16, 70, 16);
     ctx.fillStyle = 'var(--pipe)'; ctx.fillRect(x, bottomY, 70, H - bottomY - GROUND_H);
     ctx.fillStyle = 'var(--pipe-dark)'; ctx.fillRect(x, bottomY, 70, 16);
@@ -195,6 +230,7 @@
   function loop(t){
     const dt = Math.min((t - last) / 1000 || 0, 1/20);
     last = t;
+    
     if (running && !dead){
       spawnTimer += dt*1000;
       if (spawnTimer > PIPE_INTERVAL){
@@ -216,10 +252,15 @@
       if (titleObj && titleObj.x < -200) titleObj = null;
     }
     ctx.clearRect(0,0,W,H);
+    drawSkyline(dt);
+    drawClouds(dt);
     if(showTitleInClouds && titleObj) drawMovingTitle();
     for (const p of pipes) drawPipe(p.x, p.topH);
     drawGround();
+    
     drawSelma(player.x, player.y, player.rot);
+    
+    
     requestAnimationFrame(loop);
   }
 
@@ -229,3 +270,4 @@
 </script>
 </body>
 </html>
+
