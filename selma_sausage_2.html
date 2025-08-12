@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Selma Sausage — Chaos Catch EXTREME</title>
+  <style>
+    :root{
+      --bg:#0b0b12;
+      --fg:#f6f7fb;
+      --accent:#ffd166; /* mustard */
+      --accent2:#ef476f; /* ketchup */
+      --ui:#1a1b25;
+      --good:#4caf50;
+      --bad:#ff5c5c;
+      --flag:#2d9cdb; /* swedish blue-ish */
+    }
+    html,body{height:100%;}
+    body{
+      margin:0; background:radial-gradient(1200px 800px at 30% 10%, #171824, #0b0b12);
+      color:var(--fg); font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, "Helvetica Neue", Arial;
+      overflow:hidden; user-select:none;
+    }
+    #ui{position:fixed; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none;}
+    .panel{
+      pointer-events:auto;
+      background:linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+      border:1px solid rgba(255,255,255,0.12);
+      box-shadow:0 10px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06);
+      border-radius:24px; padding:24px; max-width:720px; width:min(92vw, 720px);
+      backdrop-filter: blur(8px);
+    }
+    h1{margin:0 0 8px; letter-spacing:0.5px;}
+    p{opacity:0.9; line-height:1.4}
+    button{
+      appearance:none; border:none; cursor:pointer; pointer-events:auto;
+      background:var(--accent); color:#1b1b1b; font-weight:700; border-radius:999px; padding:14px 22px; font-size:16px;
+      box-shadow:0 6px 20px rgba(255,209,102,0.35);
+      transition:transform .08s ease, box-shadow .2s ease;
+    }
+    button:hover{transform:translateY(-1px); box-shadow:0 10px 26px rgba(255,209,102,0.45)}
+    button:active{transform:translateY(1px)}
+    .row{display:flex; gap:12px; flex-wrap:wrap;}
+    .ghost{background:transparent; border:1px solid rgba(255,255,255,0.2); color:var(--fg); box-shadow:none}
+
+    #hud{position:fixed; top:8px; left:50%; transform:translateX(-50%); display:flex; gap:14px; align-items:center; background:rgba(0,0,0,0.25); padding:8px 12px; border-radius:999px; border:1px solid rgba(255,255,255,0.12); backdrop-filter: blur(6px);}
+    #hud .pill{padding:6px 10px; border-radius:999px; background:rgba(255,255,255,0.08); font-weight:700; font-variant-numeric:tabular-nums;}
+    #hud button{padding:8px 12px;}
+
+    canvas{position:fixed; inset:0; width:100vw; height:100vh; display:block;}
+
+    #touchHint{position:fixed; bottom:16px; left:50%; transform:translateX(-50%); opacity:.8; font-size:12px; background:rgba(0,0,0,.35); padding:6px 10px; border-radius:12px; border:1px solid rgba(255,255,255,.12)}
+  </style>
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <div id="hud" aria-live="polite">
+    <span class="pill" id="score">Score 0000</span>
+    <span class="pill" id="best">Best 0000</span>
+    <span class="pill" id="lives">❤❤❤</span>
+    <button id="pauseBtn" class="ghost" title="Pause (P)">Pause</button>
+    <button id="soundBtn" class="ghost" title="Toggle sound (M)">🔊</button>
+  </div>
+
+  <div id="ui">
+    <div class="panel" id="menu">
+      <h1>Selma Sausage — <span style="color:var(--accent)">Chaos Catch EXTREME</span> 🌭</h1>
+      <p>
+        You are <strong>Selma Sausage</strong>, Sweden’s most chaotic meat-based heroine. Swerve to <strong>catch mustard</strong>, dodge evil <strong>forks</strong>, pop <strong>ketchup shields</strong>, and slam the <strong>🇸🇪 Swedish flag</strong> for <em>FIKA MODE</em> (x2 score, mustard magnet, visuals go bonkers, Selma sings 🎶).
+      </p>
+      <p><strong>Controls:</strong> ←/→ or A/D, drag on mobile, or tilt if supported. <kbd>P</kbd> to pause, <kbd>M</kbd> to mute.</p>
+      <div class="row">
+        <button id="startBtn">Start Game</button>
+        <button id="howBtn" class="ghost">How to Play</button>
+      </div>
+    </div>
+
+    <div class="panel" id="how" style="display:none">
+      <h2>How to Play</h2>
+      <ul>
+        <li>Catch <strong style="color:var(--accent)">mustard</strong> (+100, combos stack).</li>
+        <li>Avoid <strong style="color:var(--bad)">forks</strong> (lose a life).</li>
+        <li><strong style="color:var(--accent2)">Ketchup shield</strong> blocks one hit.</li>
+        <li><strong style="color:var(--flag)">Swedish flag</strong> = <em>FIKA MODE</em>: mustard magnet + <strong>x2 score</strong> + chaos stripes + Selma sings.</li>
+        <li>Random chaos: fork rain, mustard fiesta, inverted controls. Survive as speed ramps up.</li>
+      </ul>
+      <div class="row">
+        <button id="backBtn" class="ghost">Back</button>
+      </div>
+    </div>
+
+    <div class="panel" id="gameOver" style="display:none; text-align:center">
+      <h2>Game Over 💀</h2>
+      <p id="finalStats">Score: 0</p>
+      <div class="row" style="justify-content:center">
+        <button id="retryBtn">Play Again</button>
+        <button id="shareBtn" class="ghost">Share</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="touchHint">Drag to move • Tilt supported</div>
+
+  <script>
+  (() => {
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+
+    const hud = {
+      score: document.getElementById('score'),
+      best: document.getElementById('best'),
+      lives: document.getElementById('lives'),
+      pauseBtn: document.getElementById('pauseBtn'),
+      soundBtn: document.getElementById('soundBtn'),
+    };
+
+    const ui = {
+      root: document.getElementById('ui'),
+      menu: document.getElementById('menu'),
+      how: document.getElementById('how'),
+      over: document.getElementById('gameOver'),
+      stats: document.getElementById('finalStats'),
+      start: document.getElementById('startBtn'),
+      howBtn: document.getElementById('howBtn'),
+      backBtn: document.getElementById('backBtn'),
+      retry: document.getElementById('retryBtn'),
+      share: document.getElementById('shareBtn'),
+    };
+
+    const touchHint = document.getElementById('touchHint');
+
+    const state = {
+      running:false,
+      paused:false,
+      width:0, height:0, dpr:1,
+      t:0, dt:0, last:0,
+      score:0, best: parseInt(localStorage.getItem('selma_best')||'0',10),
+      lives:3, combo:0, speed:1,
+      sound:true,
+      shield:false,
+      multiplier:1,
+      fikaUntil:0,
+      invertUntil:0,
+      nextChaos:6,
+      singingUntil:0,
+    };
+
+    function resize(){
+      state.dpr = Math.min(window.devicePixelRatio||1, 2);
+      state.width = canvas.width = Math.floor(innerWidth * state.dpr);
+      state.height = canvas.height = Math.floor(innerHeight * state.dpr);
+      canvas.style.width = innerWidth + 'px';
+      canvas.style.height = innerHeight + 'px';
+    }
+    addEventListener('resize', resize, {passive:true});
+    resize();
+
+    // Simple RNG
+    const rnd = {
+      s: Date.now() % 2147483647,
+      next(){ return this.s = this.s * 48271 % 2147483647; },
+      f(){ return (this.next() / 2147483647); }
+    };
+
+    // Audio (bleeps + choir)
+    const Audioz = (()=>{
+      const AC = (window.AudioContext||window.webkitAudioContext);
+      let ctxA = null;
+      function ensure(){
+        if(!ctxA && AC){ ctxA = new AC(); }
+        return ctxA;
+      }
+      function beep(type='square', freq=440, dur=0.08, gain=0.06){
+        if(!state.sound || !ensure()) return;
+        const t = ctxA.currentTime;
+        const o = ctxA.createOscillator();
+        const g = ctxA.createGain();
+        o.type = type; o.frequency.value = freq;
+        g.gain.value = gain; g.gain.exponentialRampToValueAtTime(0.0001, t+dur);
+        o.connect(g).connect(ctxA.destination); o.start(t); o.stop(t+dur);
+      }
+      function chord(freqs=[440,550,660], dur=0.6, gain=0.05){
+        if(!state.sound || !ensure()) return;
+        const t0 = ctxA.currentTime;
+        freqs.forEach((f,i)=>{
+          const o = ctxA.createOscillator();
+          o.type = 'sine';
+          const g = ctxA.createGain();
+          g.gain.setValueAtTime(0.0001, t0);
+          g.gain.exponentialRampToValueAtTime(gain*(1+(i*0.2)), t0+0.05);
+          g.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
+          o.frequency.value = f; o.connect(g).connect(ctxA.destination); o.start(t0); o.stop(t0+dur);
+        });
+      }
+      return {
+        collect(){beep('triangle', 920, .07, .08)},
+        hit(){beep('sawtooth', 140, .12, .12)},
+        click(){beep('square', 520, .05, .05)},
+        power(){chord([392,494,587],0.7,0.06)},     // G B D
+        sing(){chord([523,659,784],1.0,0.05)},      // C E G
+      };
+    })();
+
+    // Entities
+    const selma = { x:0, y:0, vx:0, ax:0, w:80, h:36 };
+    const items = []; // good + bad + powerups
+
+    function reset(){
+      state.running = true; state.paused = false;
+      state.t = 0; state.last = performance.now(); state.dt = 0;
+      state.score = 0; state.lives = 3; state.combo = 0; state.speed = 1; state.shield = false;
+      state.multiplier=1; state.fikaUntil=0; state.invertUntil=0; state.nextChaos=4 + Math.floor(rnd.f()*4); state.singingUntil=0;
+      items.length = 0;
+      selma.w = Math.round(100 * (state.width/1080));
+      selma.h = Math.round(selma.w * 0.45);
+      selma.x = state.width/2; selma.y = state.height * 0.82; selma.vx = 0; selma.ax=0;
+      spawnWave(true);
+      updateHUD();
+    }
+
+    function updateHUD(){
+      hud.score.textContent = `Score ${state.score.toString().padStart(4,'0')}`;
+      hud.best.textContent = `Best ${Math.max(state.best, state.score).toString().padStart(4,'0')}`;
+      const livesPips = (state.shield? '🛡 ': '') + '❤'.repeat(state.lives);
+      hud.lives.textContent = livesPips + (state.fikaUntil>state.t? ' 🇸🇪' : '');
+      hud.pauseBtn.textContent = state.paused? 'Resume' : 'Pause';
+      hud.soundBtn.textContent = state.sound? '🔊' : '🔇';
+    }
+
+    // Spawning
+    function spawnWave(initial=false){
+      const lanes = 5; // equally spaced
+      const gap = state.width/(lanes+1);
+      const baseY = initial? -state.height*0.2 : -40;
+      for(let i=1;i<=lanes;i++){
+        const x = gap*i + (rnd.f()*gap*0.25 - gap*0.125);
+        const r = rnd.f();
+        if(r < 0.55){
+          items.push(makeMustard(x, baseY - rnd.f()*200));
+        } else if(r < 0.85){
+          items.push(makeFork(x, baseY - rnd.f()*200));
+        } else if(r < 0.96){
+          items.push(makeKetchup(x, baseY - rnd.f()*200));
+        } else {
+          items.push(makeFlag(x, baseY - rnd.f()*200));
+        }
+      }
+    }
+
+    function makeMustard(x,y){ return {kind:'mustard', x,y, r:20, vy: 170, spin:rnd.f()*Math.PI, a:1}; }
+    function makeFork(x,y){ return {kind:'fork', x,y, r:22, vy: 190, wob: rnd.f()*Math.PI, a:1}; }
+    function makeKetchup(x,y){ return {kind:'ketchup', x,y, r:24, vy: 170, a:1, pulse:0}; }
+    function makeFlag(x,y){ return {kind:'flag', x,y, r:26, vy: 160, a:1, sway: rnd.f()*Math.PI}; }
+
+    // Physics & game loop
+    function step(now){
+      if(!state.running){ return; }
+      state.dt = Math.min(0.033, (now - state.last)/1000); state.last = now; state.t += state.dt;
+      if(!state.paused){
+        tick(state.dt);
+        draw();
+      }
+      requestAnimationFrame(step);
+    }
+
+    function tick(dt){
+      // Difficulty ramp — faster overall
+      state.speed = 1.2 + Math.min(3.2, state.t/18);
+
+      // Timers
+      if(state.fikaUntil>0 && state.t>state.fikaUntil){ state.multiplier=1; state.fikaUntil=0; }
+      if(state.invertUntil>0 && state.t>state.invertUntil){ state.invertUntil=0; popText('Controls normal', selma.x, selma.y-40, '#fff'); }
+      if(state.t>state.nextChaos){ triggerChaos(); state.nextChaos = state.t + 6 + rnd.f()*6; }
+      if(state.singingUntil>0 && state.t>state.singingUntil){ state.singingUntil=0; }
+
+      // Move Selma (snappier + optional invert)
+      const invert = state.invertUntil>state.t ? -1 : 1;
+      selma.vx += invert * selma.ax * 3200 * dt; // faster accel
+      selma.vx *= 0.92; // less friction -> more glide
+      selma.x += selma.vx * dt;
+      const margin = selma.w*0.55;
+      selma.x = Math.max(margin, Math.min(state.width - margin, selma.x));
+
+      // Items
+      for(const it of items){
+        let vym = it.vy * state.speed;
+        if(it.kind==='fork'){
+          it.wob += dt*7; it.x += Math.sin(it.wob)*34*dt; vym *= 1.08;
+        }
+        if(it.kind==='mustard'){
+          it.spin += dt*7;
+          // Mustard magnet during FIKA
+          if(state.fikaUntil>state.t){
+            const dx = selma.x - it.x; it.x += Math.sign(dx) * Math.min(Math.abs(dx), 280*dt);
+          }
+        }
+        if(it.kind==='ketchup') it.pulse += dt*5;
+        if(it.kind==='flag'){ it.sway += dt*4; it.x += Math.sin(it.sway)*18*dt; }
+        it.y += vym * dt;
+        if(it.y > state.height + 80) it.a -= dt*1.5;
+      }
+      // Cull
+      for(let i=items.length-1;i>=0;i--){ if(items[i].a<=0) items.splice(i,1); }
+
+      // Collisions
+      for(let i=items.length-1;i>=0;i--){
+        const it = items[i];
+        if(dist(it.x, it.y, selma.x, selma.y) < it.r + Math.max(selma.w,selma.h)*0.35){
+          if(it.kind==='mustard'){
+            items.splice(i,1); collect(100); Audioz.collect();
+          } else if(it.kind==='ketchup'){
+            items.splice(i,1); state.shield = true; state.combo+=1; state.score+=50*state.multiplier; popText('+🛡', it.x, it.y, '#ef476f'); Audioz.collect();
+          } else if(it.kind==='flag'){
+            items.splice(i,1); fikaMode();
+          } else if(it.kind==='fork'){
+            items.splice(i,1); hit();
+          }
+        }
+      }
+
+      // Spawn new waves periodically (a little quicker)
+      if(state.t % (1.0/state.speed) < state.dt){ spawnWave(false); }
+    }
+
+    function collect(points){
+      state.combo = Math.min(12, state.combo+1);
+      const bonus = Math.floor(points * (1 + state.combo*0.08)) * state.multiplier;
+      state.score += bonus; updateHUD();
+      shake(3 + state.combo*0.35);
+      popText('+'+bonus + (state.multiplier>1?' x'+state.multiplier:''), selma.x, selma.y-20, '#ffd166');
+      maybeSing(0.07);
+    }
+
+    function fikaMode(){
+      state.multiplier = 2; state.fikaUntil = state.t + 7; updateHUD();
+      popText('FIKA MODE! x2', selma.x, selma.y-40, '#2d9cdb');
+      shake(10);
+      Audioz.power();
+      // burst of confetti mustard
+      for(let k=0;k<10;k++) items.push(makeMustard(rnd.f()*state.width, -50 - rnd.f()*150));
+      // 20% chance to invert for extra chaos
+      if(rnd.f()<0.2){ invertControls(4); }
+      // Selma sings a bright chord
+      sing();
+    }
+
+    function invertControls(sec=3){
+      state.invertUntil = state.t + sec; popText('Controls inverted!', selma.x, selma.y-60, '#ff5c5c');
+      shake(6);
+    }
+
+    function hit(){
+      if(state.shield){
+        state.shield = false; popText('BLOCKED', selma.x, selma.y-30, '#ef476f'); shake(8); Audioz.hit(); updateHUD(); return;
+      }
+      state.combo = 0; state.lives--; updateHUD(); shake(14); Audioz.hit();
+      flashScreen(); maybeSing(0.15);
+      if(state.lives<=0){ gameOver(); }
+    }
+
+    // Chaotic events
+    function triggerChaos(){
+      const roll = rnd.f();
+      if(roll < 0.33){ // rain burst
+        for(let i=0;i<12;i++) items.push(makeFork(rnd.f()*state.width, -rnd.f()*300-40));
+        popText('Fork Rain!!', state.width*0.5, state.height*0.2, '#fff'); shake(10);
+      } else if(roll < 0.66){ // mustard fiesta
+        for(let i=0;i<18;i++) items.push(makeMustard(rnd.f()*state.width, -rnd.f()*400-40));
+        popText('Mustard Fiesta!!', state.width*0.5, state.height*0.25, '#ffd166');
+      } else { // invert surprise
+        invertControls(3 + rnd.f()*2);
+      }
+      maybeSing(0.5);
+    }
+
+    // Visual FX
+    let screenshake = 0, flash = 0; const floatTexts=[];
+    function shake(intensity){ screenshake = Math.min(22, screenshake + intensity); }
+    function flashScreen(){ flash = 1; }
+    function popText(text,x,y,color){ floatTexts.push({text,x,y,a:1,color}); }
+
+    function draw(){
+      // Clear with subtle animated gradient when FIKA active
+      const shx = (rnd.f()-0.5) * screenshake; const shy = (rnd.f()-0.5) * screenshake; screenshake *= 0.90;
+      ctx.setTransform(1,0,0,1, shx, shy);
+      const bg = state.fikaUntil>state.t ? '#0b1530' : '#0b0b12';
+      ctx.fillStyle = bg; ctx.fillRect(-shx,-shy, state.width, state.height);
+
+      // Backdrops: stripes (blue/yellow while FIKA)
+      const stripeH = 24 * state.dpr;
+      for(let y=0;y<state.height;y+=stripeH){
+        if(state.fikaUntil>state.t){
+          ctx.fillStyle = y% (stripeH*2)===0? 'rgba(45,156,219,0.18)' : 'rgba(255,209,102,0.18)';
+        } else {
+          ctx.fillStyle = y% (stripeH*2)===0? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.03)';
+        }
+        ctx.fillRect(0,y,state.width,stripeH);
+      }
+
+      // Items
+      for(const it of items){
+        if(it.kind==='mustard') drawMustard(it);
+        else if(it.kind==='fork') drawFork(it);
+        else if(it.kind==='ketchup') drawKetchup(it);
+        else drawFlag(it);
+      }
+
+      // Selma (sausage)
+      drawSelma();
+
+      // Floating texts
+      for(let i=floatTexts.length-1;i>=0;i--){
+        const ft=floatTexts[i]; ft.y-=0.6; ft.a-=0.02; if(ft.a<=0) floatTexts.splice(i,1);
+        ctx.globalAlpha = Math.max(0,ft.a); ctx.fillStyle = ft.color; ctx.font = `${24*state.dpr}px/1.2 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace`;
+        ctx.textAlign='center'; ctx.fillText(ft.text, ft.x, ft.y);
+        ctx.globalAlpha = 1;
+      }
+
+      // Flash overlay
+      if(flash>0){ ctx.fillStyle = `rgba(255,92,92,${flash})`; ctx.fillRect(0,0,state.width,state.height); flash*=0.85; }
+    }
+
+    function drawSelma(){
+      const {x,y,w,h}=selma; const r=h/2;
+      ctx.save(); ctx.translate(x,y);
+      // Body
+      roundRect(-w/2,-h/2,w,h,r, '#d26b3c'); // sausage skin
+      // Shine
+      roundRect(-w/2+6,-h/2+6, w*0.35, h*0.7, h*0.35, 'rgba(255,255,255,0.08)');
+      // Ends
+      circle(-w/2,0,h*0.42,'#b85f35'); circle(w/2,0,h*0.42,'#b85f35');
+      // Eyes
+      circle(-w*0.12,-h*0.12,h*0.12,'#111'); circle(w*0.08,-h*0.10,h*0.12,'#111');
+      // Smile
+      ctx.strokeStyle='#111'; ctx.lineWidth = Math.max(2, h*0.08); ctx.lineCap='round';
+      ctx.beginPath(); ctx.arc(-w*0.02, h*0.1, h*0.22, 0.1*Math.PI, 0.9*Math.PI); ctx.stroke();
+      // Shield outline if active
+      if(state.shield){
+        ctx.strokeStyle='rgba(239,71,111,0.85)'; ctx.lineWidth=4; ctx.beginPath(); ctx.ellipse(0,0,w*0.65,h*0.9,0,0,Math.PI*2); ctx.stroke();
+      }
+      // FIKA aura + singing notes
+      if(state.fikaUntil>state.t){
+        ctx.strokeStyle='rgba(45,156,219,0.9)'; ctx.lineWidth=3; ctx.beginPath(); ctx.ellipse(0,0,w*0.8,h*1.1,0,0,Math.PI*2); ctx.stroke();
+      }
+      if(state.singingUntil>state.t){
+        ctx.fillStyle='rgba(255,255,255,0.9)';
+        ctx.font = `${18*state.dpr}px/1 serif`;
+        ctx.fillText('♪', w*0.4, -h*0.6);
+        ctx.fillText('♫', w*0.2, -h*1.0);
+      }
+      ctx.restore();
+    }
+
+    function drawMustard(it){
+      ctx.save(); ctx.globalAlpha = Math.max(0,it.a);
+      ctx.translate(it.x,it.y); ctx.rotate(it.spin);
+      bottle('#ffd166','#f7c74d');
+      ctx.restore();
+    }
+    function drawKetchup(it){
+      ctx.save(); ctx.globalAlpha = Math.max(0,it.a);
+      ctx.translate(it.x,it.y); ctx.scale(1+Math.sin(it.pulse)*0.05,1+Math.sin(it.pulse)*0.05);
+      bottle('#ef476f','#d93a60');
+      ctx.restore();
+    }
+    function drawFork(it){
+      ctx.save(); ctx.globalAlpha = Math.max(0,it.a);
+      ctx.translate(it.x,it.y);
+      ctx.fillStyle = '#cfd7df';
+      roundRect(-6,-14,12,40,6,'#cfd7df');
+      roundRect(-16,-22,32,12,6,'#e3e9ee');
+      roundRect(-12,-36,4,14,2,'#e3e9ee');
+      roundRect(-2,-36,4,14,2,'#e3e9ee');
+      roundRect(8,-36,4,14,2,'#e3e9ee');
+      ctx.restore();
+    }
+    function drawFlag(it){
+      ctx.save(); ctx.globalAlpha = Math.max(0,it.a);
+      ctx.translate(it.x,it.y);
+      // Swedish flag
+      roundRect(-18,-12,36,24,4,'#2d9cdb');
+      ctx.fillStyle = '#ffd166';
+      ctx.fillRect(-18,-3,36,6);
+      ctx.fillRect(-4,-12,6,24);
+      ctx.restore();
+    }
+
+    // Primitive helpers
+    function circle(x,y,r,fill){ ctx.fillStyle=fill; ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill(); }
+    function roundRect(x,y,w,h,r,fill){
+      ctx.fillStyle = fill; const rr = Math.min(r, Math.abs(w/2), Math.abs(h/2));
+      ctx.beginPath();
+      ctx.moveTo(x+rr,y);
+      ctx.arcTo(x+w,y, x+w,y+h, rr);
+      ctx.arcTo(x+w,y+h, x,y+h, rr);
+      ctx.arcTo(x,y+h, x,y, rr);
+      ctx.arcTo(x,y, x+w,y, rr);
+      ctx.closePath(); ctx.fill();
+    }
+    function bottle(body, cap){
+      roundRect(-12,-18,24,36,8, body);
+      roundRect(-10,-6,20,12,6, 'rgba(255,255,255,0.85)');
+      roundRect(-8,-26,16,8,3, cap);
+    }
+    function dist(ax,ay,bx,by){ const dx=ax-bx, dy=ay-by; return Math.hypot(dx,dy); }
+
+    // Input
+    const keys = new Set();
+    addEventListener('keydown', (e)=>{
+      if(['ArrowLeft','ArrowRight','KeyA','KeyD','KeyP','KeyM','Space'].includes(e.code)) e.preventDefault();
+      keys.add(e.code);
+      if(e.code==='KeyP') togglePause();
+      if(e.code==='KeyM'){ state.sound=!state.sound; updateHUD(); Audioz.click(); }
+    });
+    addEventListener('keyup', (e)=>{ keys.delete(e.code); });
+
+    let pointerId=null;
+    canvas.addEventListener('pointerdown', (e)=>{ pointerId = e.pointerId; canvas.setPointerCapture(pointerId); handlePointer(e); });
+    canvas.addEventListener('pointermove', (e)=>{ if(pointerId===e.pointerId) handlePointer(e); });
+    canvas.addEventListener('pointerup', ()=>{ pointerId=null; selma.ax=0; });
+
+    function handlePointer(e){
+      const x = e.clientX * state.dpr; const dx = x - selma.x; selma.ax = Math.max(-1, Math.min(1, dx/160));
+    }
+
+    // Device tilt (optional)
+    if(window.DeviceOrientationEvent){
+      window.addEventListener('deviceorientation', (e)=>{
+        if(e.gamma!=null){ selma.ax = Math.max(-1, Math.min(1, e.gamma/26)); }
+      });
+    }
+
+    function applyInput(){
+      let ax = 0;
+      if(keys.has('ArrowLeft')||keys.has('KeyA')) ax -= 1;
+      if(keys.has('ArrowRight')||keys.has('KeyD')) ax += 1;
+      selma.ax = Math.max(-1, Math.min(1, selma.ax*0.55 + ax*0.75));
+    }
+
+    // Singing
+    function sing(){ state.singingUntil = state.t + 1.0; Audioz.sing(); }
+    function maybeSing(p){ if(rnd.f()<p){ sing(); } }
+
+    // Game state controls
+    function togglePause(){ if(!state.running) return; state.paused = !state.paused; updateHUD(); Audioz.click(); }
+    hud.pauseBtn.addEventListener('click', togglePause);
+    hud.soundBtn.addEventListener('click', ()=>{ state.sound=!state.sound; updateHUD(); Audioz.click(); });
+
+    function gameOver(){
+      state.running = false; state.best = Math.max(state.best, state.score); localStorage.setItem('selma_best', String(state.best));
+      ui.menu.style.display='none'; ui.how.style.display='none'; ui.over.style.display='block';
+      ui.stats.textContent = `Score: ${state.score} • Best: ${state.best}`;
+      ui.root.style.display='flex';
+    }
+
+    // UI wiring
+    ui.start.addEventListener('click', ()=>{ startGame(); });
+    ui.howBtn.addEventListener('click', ()=>{ ui.menu.style.display='none'; ui.how.style.display='block'; Audioz.click(); });
+    ui.backBtn.addEventListener('click', ()=>{ ui.how.style.display='none'; ui.menu.style.display='block'; Audioz.click(); });
+    ui.retry.addEventListener('click', ()=>{ startGame(); });
+    ui.share.addEventListener('click', async ()=>{
+      const text = `I scored ${state.best} in Selma Sausage — Chaos Catch! 🌭💥`;
+      if(navigator.share){ try{ await navigator.share({text, url: location.href}); }catch{} }
+      else { navigator.clipboard.writeText(text); alert('Copied to clipboard!'); }
+    });
+
+    function startGame(){
+      ui.root.style.display='none'; ui.menu.style.display='none'; ui.how.style.display='none'; ui.over.style.display='none';
+      reset(); Audioz.click();
+      state.last = performance.now(); requestAnimationFrame(step);
+    }
+
+    // Accessibility: pause on blur
+    window.addEventListener('blur', ()=>{ state.paused = true; updateHUD(); });
+
+    // Drive inputs
+    (function inputDriver(){ applyInput(); requestAnimationFrame(inputDriver); })();
+
+    // Start at menu
+    updateHUD();
+  })();
+  </script>
+</body>
+</html>
